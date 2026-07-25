@@ -8,6 +8,7 @@ import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/providers/cart_provider.dart';
 import '../../core/utils/currency_formatter.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import '../../models/address.dart';
 import '../../services/address_service.dart';
 import '../../core/providers/address_provider.dart';
@@ -33,7 +34,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   final List<Map<String, dynamic>> _paymentMethods = [
     {'id': 'cash', 'label': 'Cash on Delivery / Pickup', 'icon': Icons.payments_outlined},
-    {'id': 'card', 'label': 'Credit / Debit Card', 'icon': Icons.credit_card_outlined},
+    {'id': 'card', 'label': 'Credit / Debit Card (Stripe)', 'icon': Icons.credit_card_outlined},
     {'id': 'wallet', 'label': 'Digital Wallet', 'icon': Icons.account_balance_wallet_outlined},
   ];
 
@@ -89,20 +90,81 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         };
       }).toList();
 
-      final order = await ref.read(orderServiceProvider).placeOrder(
-            cartItems: cartPayload,
-            orderType: _orderType,
-            tableNumber: _orderType == 'dine_in' ? _tableCtrl.text.trim() : null,
-            addressId: _orderType == 'delivery' ? _selectedAddress?.id : null,
-            deliveryAddress: _orderType == 'delivery' ? effectiveDeliveryAddress : null,
-            notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-            paymentMethod: _paymentMethod,
-          );
+      if (_paymentMethod == 'card') {
+        // ── 1. Create Pending Order (status: pending_payment, cart preserved)
+        final order = await ref.read(orderServiceProvider).placeOrder(
+              cartItems: cartPayload,
+              orderType: _orderType,
+              tableNumber: _orderType == 'dine_in' ? _tableCtrl.text.trim() : null,
+              addressId: _orderType == 'delivery' ? _selectedAddress?.id : null,
+              deliveryAddress: _orderType == 'delivery' ? effectiveDeliveryAddress : null,
+              notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+              paymentMethod: 'card',
+            );
 
-      await ref.read(cartNotifierProvider.notifier).clearCart();
+        // ── 2. Request Payment Intent from server
+        final intentData =
+            await ref.read(orderServiceProvider).createPaymentIntent(order.id);
+        final clientSecret = intentData['client_secret'] as String;
+        final paymentIntentId = intentData['payment_intent_id'] as String;
 
-      if (!mounted) return;
-      context.go('/order-placed/${order.id}');
+        // ── 3. Initialize PaymentSheet
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'Bistro Go',
+            style: ThemeMode.light,
+            appearance: const PaymentSheetAppearance(
+              colors: PaymentSheetAppearanceColors(
+                primary: AppColors.primary,
+              ),
+            ),
+          ),
+        );
+
+        // ── 4. Present PaymentSheet to user
+        await Stripe.instance.presentPaymentSheet();
+
+        // ── 5. Confirm Payment with server securely
+        final confirmedOrder = await ref.read(orderServiceProvider).confirmOrderPayment(
+              orderId: order.id,
+              paymentIntentId: paymentIntentId,
+            );
+
+        // ── 6. Clear local cart state & navigate
+        await ref.read(cartNotifierProvider.notifier).clearCart();
+
+        if (!mounted) return;
+        context.go('/order-placed/${confirmedOrder.id}');
+      } else {
+        // ── Cash on Delivery / Pickup Flow ──
+        final order = await ref.read(orderServiceProvider).placeOrder(
+              cartItems: cartPayload,
+              orderType: _orderType,
+              tableNumber: _orderType == 'dine_in' ? _tableCtrl.text.trim() : null,
+              addressId: _orderType == 'delivery' ? _selectedAddress?.id : null,
+              deliveryAddress: _orderType == 'delivery' ? effectiveDeliveryAddress : null,
+              notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+              paymentMethod: _paymentMethod,
+            );
+
+        await ref.read(cartNotifierProvider.notifier).clearCart();
+
+        if (!mounted) return;
+        context.go('/order-placed/${order.id}');
+      }
+    } on StripeException catch (e) {
+      if (mounted) {
+        final isCanceled = e.error.code == FailureCode.Canceled;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isCanceled
+                ? 'Payment cancelled. Your cart and order remain saved.'
+                : 'Payment failed: ${e.error.localizedMessage}'),
+            backgroundColor: isCanceled ? AppColors.onSurfaceVariant : AppColors.error,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,6 +175,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (mounted) setState(() => _placing = false);
     }
   }
+
 
   void _showAddressSelectorBottomSheet(
       BuildContext context, List<Address> savedAddresses) {

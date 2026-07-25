@@ -102,12 +102,15 @@ serve(async (req) => {
     const tax = +(subtotal * TAX_RATE).toFixed(2);
     const total = +(subtotal + tax + DELIVERY_FEE).toFixed(2);
 
+    const isCardPayment = payment_method === "card" || body.is_pending_payment === true;
+    const initialStatus = isCardPayment ? "pending_payment" : "placed";
+
     // Create order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .insert({
         user_id: user.id,
-        status: "placed",
+        status: initialStatus,
         order_type: resolvedOrderType,
         subtotal: +subtotal.toFixed(2),
         tax,
@@ -116,14 +119,13 @@ serve(async (req) => {
         address_id: address_id || null,
         delivery_address: delivery_address || null,
         table_number: table_number || null,
-
         notes: notes || null,
         payment_method: payment_method || "cash",
+        payment_status: isCardPayment ? "pending" : "completed",
         idempotency_key: idempotency_key || null,
       })
-      .select("id")
+      .select("id, total")
       .single();
-
 
     if (orderErr || !order) {
       console.error("Order creation error:", orderErr);
@@ -145,17 +147,20 @@ serve(async (req) => {
       });
     }
 
-    // Clear the user's cart
-    await supabase.from("cart_items").delete().eq("user_id", user.id);
+    // For Cash on Delivery, clear the user's cart immediately.
+    // For Card payments, cart is cleared only after confirm-order-payment succeeds.
+    if (!isCardPayment) {
+      await supabase.from("cart_items").delete().eq("user_id", user.id);
+    }
 
     // Log status history
     await supabase.from("order_status_history").insert({
       order_id: order.id,
-      new_status: "placed",
+      new_status: initialStatus,
       changed_by: user.id,
     });
 
-    return new Response(JSON.stringify({ order_id: order.id }), {
+    return new Response(JSON.stringify({ order_id: order.id, total: order.total, status: initialStatus }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {

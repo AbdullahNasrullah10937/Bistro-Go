@@ -16,6 +16,12 @@ dependencies:
   # Supabase
   supabase_flutter: ^2.9.0
 
+  # Stripe Payments
+  flutter_stripe: ^13.1.0
+
+
+
+
   # State Management
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1

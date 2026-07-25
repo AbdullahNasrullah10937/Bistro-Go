@@ -494,6 +494,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
+  flutter_stripe:
+    dependency: "direct main"
+    description:
+      name: flutter_stripe
+      sha256: "155eb664561eb8f6bbd0ac8dcf1e1b5e6d360369976f0db42b68e295ba9b8c3f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "13.1.0"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -1245,6 +1253,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  stripe_android:
+    dependency: transitive
+    description:
+      name: stripe_android
+      sha256: ee8c3ae59efb94e4c74e769b3415162115a1ae927d2a66a0463507f90f87413c
+      url: "https://pub.dev"
+    source: hosted
+    version: "13.1.0"
+  stripe_ios:
+    dependency: transitive
+    description:
+      name: stripe_ios
+      sha256: eb91cdd8ab8841c93bdf8786a43790ff7fc7b875feb5943d5b207303f12af901
+      url: "https://pub.dev"
+    source: hosted
+    version: "13.1.0"
+  stripe_platform_interface:
+    dependency: transitive
+    description:
+      name: stripe_platform_interface
+      sha256: "9b91ea6d638d006f13721a7fc4d68feb749db8bc80d2fe1cb1323d1196cd2390"
+      url: "https://pub.dev"
+    source: hosted
+    version: "13.1.0"
   supabase:
     dependency: transitive
     description:
@@ -1487,4 +1519,4 @@ packages:
     version: "2.1.1"
 sdks:
   dart: ">=3.11.0 <4.0.0"
-  flutter: ">=3.38.4"
+  flutter: ">=3.41.0"

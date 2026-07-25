@@ -289,5 +289,52 @@ class OrderService {
       }
     }
   }
+
+  // ── Create Stripe Payment Intent ──────────────────────────────────────────
+  Future<Map<String, dynamic>> createPaymentIntent(String orderId) async {
+    try {
+      final response = await _client.functions.invoke(
+        'create-payment-intent',
+        body: {'order_id': orderId},
+      );
+
+      if (response.status == 200 && response.data != null) {
+        return Map<String, dynamic>.from(response.data as Map);
+      }
+
+      final errorMsg = (response.data is Map) ? response.data['error']?.toString() : null;
+      throw ServerFailure(errorMsg ?? 'Failed to create payment intent (${response.status})');
+    } catch (e) {
+      if (e is AppFailure) rethrow;
+      throw ServerFailure('Payment initialization error: $e');
+    }
+  }
+
+  // ── Confirm Order Payment ──────────────────────────────────────────────────
+  Future<Order> confirmOrderPayment({
+    required String orderId,
+    required String paymentIntentId,
+  }) async {
+    try {
+      final response = await _client.functions.invoke(
+        'confirm-order-payment',
+        body: {
+          'order_id': orderId,
+          'payment_intent_id': paymentIntentId,
+        },
+      );
+
+      if (response.status == 200) {
+        return await fetchOrderById(orderId);
+      }
+
+      final errorMsg = (response.data is Map) ? response.data['error']?.toString() : null;
+      throw ServerFailure(errorMsg ?? 'Failed to confirm order payment (${response.status})');
+    } catch (e) {
+      if (e is AppFailure) rethrow;
+      throw ServerFailure('Payment confirmation error: $e');
+    }
+  }
 }
+
 
