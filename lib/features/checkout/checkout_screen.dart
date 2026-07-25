@@ -8,7 +8,8 @@ import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/providers/cart_provider.dart';
 import '../../core/utils/currency_formatter.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' hide Address;
+
 import '../../models/address.dart';
 import '../../services/address_service.dart';
 import '../../core/providers/address_provider.dart';
