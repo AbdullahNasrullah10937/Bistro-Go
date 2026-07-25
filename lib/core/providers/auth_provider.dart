@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/profile.dart';
 import '../../services/auth_service.dart';
+import 'address_provider.dart';
 import 'cart_provider.dart';
 import 'order_provider.dart';
+
 
 
 /// Stream of Supabase auth state changes
@@ -21,15 +23,16 @@ final authStateListenerProvider = Provider<void>((ref) {
           event == AuthChangeEvent.signedOut ||
           event == AuthChangeEvent.userUpdated ||
           event == AuthChangeEvent.tokenRefreshed) {
-        // Invalidate all user-scoped state so no stale data leaks across sessions
         ref.invalidate(cartNotifierProvider);
         ref.invalidate(myOrdersProvider);
         ref.invalidate(profileNotifierProvider);
         ref.invalidate(profileProvider);
+        ref.invalidate(userAddressesProvider);
       }
     });
   });
 });
+
 
 /// The currently signed-in user (nullable)
 

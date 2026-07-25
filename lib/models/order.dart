@@ -109,6 +109,7 @@ class Order {
   final double deliveryFee;
   final double total;
   final String? addressId;
+  final String? deliveryAddress;
   final String? tableNumber;
   final String? notes;
   final String paymentMethod;
@@ -129,6 +130,7 @@ class Order {
     required this.deliveryFee,
     required this.total,
     this.addressId,
+    this.deliveryAddress,
     this.tableNumber,
     this.notes,
     required this.paymentMethod,
@@ -152,6 +154,7 @@ class Order {
       deliveryFee: (json['delivery_fee'] as num?)?.toDouble() ?? 0.0,
       total: (json['total'] as num?)?.toDouble() ?? 0.0,
       addressId: json['address_id'] as String?,
+      deliveryAddress: json['delivery_address'] as String?,
       tableNumber: json['table_number'] as String?,
       notes: json['notes'] as String?,
       paymentMethod: json['payment_method'] as String? ?? 'cash',

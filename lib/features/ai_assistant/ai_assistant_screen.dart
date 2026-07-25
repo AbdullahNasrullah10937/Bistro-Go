@@ -143,6 +143,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFF4F1EC),
       appBar: const BistroAppBar(title: 'AI Menu Assistant'),
       body: Column(
@@ -151,6 +152,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
           Expanded(
             child: ListView.builder(
               controller: _scrollCtrl,
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
               itemCount: _messages.length + (_loading ? 1 : 0),
               itemBuilder: (_, i) {
@@ -192,50 +194,55 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
 
           // ── Input bar ──────────────────────────────────────────────────────
           Container(
-            padding: EdgeInsets.fromLTRB(
-                16, 12, 16, MediaQuery.of(context).viewInsets.bottom + 16),
             color: Colors.white,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    constraints: const BoxConstraints(maxHeight: 120),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF4F1EC),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: TextField(
-                      controller: _ctrl,
-                      maxLines: null,
-                      textCapitalization: TextCapitalization.sentences,
-                      style: AppTextStyles.bodyMd,
-                      onSubmitted: (_) => _send(),
-                      decoration: InputDecoration(
-                        hintText: 'Ask about our menu...',
-                        hintStyle: AppTextStyles.bodyMd.copyWith(
-                            color: AppColors.onSurface.withValues(alpha: 0.35)),
-                        border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        constraints: const BoxConstraints(maxHeight: 120),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F1EC),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: TextField(
+                          controller: _ctrl,
+                          maxLines: null,
+                          textCapitalization: TextCapitalization.sentences,
+                          style: AppTextStyles.bodyMd,
+                          onSubmitted: (_) => _send(),
+                          onTap: _scrollToBottom,
+                          decoration: InputDecoration(
+                            hintText: 'Ask about our menu...',
+                            hintStyle: AppTextStyles.bodyMd.copyWith(
+                                color: AppColors.onSurface.withValues(alpha: 0.35)),
+                            border: InputBorder.none,
+                            contentPadding:
+                                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _send,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: _loading ? AppColors.outline : AppColors.primary,
-                      shape: BoxShape.circle,
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: _send,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: _loading ? AppColors.outline : AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                      ),
                     ),
-                    child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -243,6 +250,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     );
   }
 }
+
 
 class _ChatBubble extends StatelessWidget {
   final _Message message;

@@ -35,6 +35,7 @@ class OrderService {
     required List<Map<String, dynamic>> cartItems,
     String orderType = 'delivery',
     String? addressId,
+    String? deliveryAddress,
     String? tableNumber,
     String? notes,
     required String paymentMethod,
@@ -50,6 +51,7 @@ class OrderService {
           'cart_items': cartItems,
           'order_type': orderType,
           'address_id': addressId,
+          'delivery_address': deliveryAddress,
           'table_number': tableNumber,
           'notes': notes,
           'payment_method': paymentMethod,
@@ -98,6 +100,7 @@ class OrderService {
         'order_type': orderType,
         'table_number': tableNumber,
         'address_id': addressId,
+        'delivery_address': deliveryAddress,
         'notes': notes,
         'payment_method': paymentMethod,
         'subtotal': subtotal,
@@ -105,6 +108,7 @@ class OrderService {
         'delivery_fee': deliveryFee,
         'total': grandTotal,
       });
+
 
       // Insert into public.order_items (schema verified)
       final itemsToInsert = cartItems.map((item) {

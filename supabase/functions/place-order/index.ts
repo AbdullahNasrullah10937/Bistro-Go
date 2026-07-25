@@ -36,7 +36,8 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { idempotency_key, cart_items, address_id, table_number, notes, payment_method, order_type } = body;
+    const { idempotency_key, cart_items, address_id, delivery_address, table_number, notes, payment_method, order_type } = body;
+
 
     if (!cart_items || cart_items.length === 0) {
       return new Response(JSON.stringify({ error: "Cart is empty" }), {
@@ -113,7 +114,9 @@ serve(async (req) => {
         delivery_fee: DELIVERY_FEE,
         total,
         address_id: address_id || null,
+        delivery_address: delivery_address || null,
         table_number: table_number || null,
+
         notes: notes || null,
         payment_method: payment_method || "cash",
         idempotency_key: idempotency_key || null,
