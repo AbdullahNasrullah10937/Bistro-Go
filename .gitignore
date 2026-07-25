@@ -1,0 +1,85 @@
+# ─── Miscellaneous ────────────────────────────────────────────────────────────
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# ─── IntelliJ / Android Studio ────────────────────────────────────────────────
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# ─── VS Code ──────────────────────────────────────────────────────────────────
+.vscode/
+
+# ─── Flutter / Dart / Pub ─────────────────────────────────────────────────────
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# ─── Symbolication / Obfuscation ──────────────────────────────────────────────
+app.*.symbols
+app.*.map.json
+
+# ─── Android ──────────────────────────────────────────────────────────────────
+/android/app/debug
+/android/app/profile
+/android/app/release
+android/.gradle/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+
+# ─── iOS / macOS ──────────────────────────────────────────────────────────────
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Runner/GeneratedPluginRegistrant.*
+macos/Pods/
+macos/.symlinks/
+*.xcworkspace/
+**/Podfile.lock
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+google-services.json
+GoogleService-Info.plist
+supabase/.env
+supabase/.env.*
+
+# ─── Supabase ─────────────────────────────────────────────────────────────────
+supabase/.temp/
+supabase/.branches/
+supabase/seed.sql
+
+# ─── Node / npm (Supabase CLI, Edge Functions dev) ────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Generated / Large asset files ────────────────────────────────────────────
+Images_to_seed_initially/
+Design/
