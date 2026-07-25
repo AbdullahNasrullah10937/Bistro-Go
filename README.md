@@ -1,94 +1,230 @@
-# 🍽️ Bistro Go — Cafe & Restaurant Mobile Ordering App
+<div align="center">
 
-**Bistro Go** is a premium, full-featured mobile ordering app built with **Flutter**, **Supabase** (Postgres, Auth, Realtime, Storage, RLS), **Groq API** (Llama 3.3 70B AI Assistant), and **Material 3 Design System**.
+# 🍽️ Bistro Go
 
----
+### Premium Café & Restaurant Mobile Ordering App
 
-## 🔑 Authentication Guide & Admin Credentials
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase)](https://supabase.com)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart)](https://dart.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-### 1. How Email / Password Authentication Works
-- **Customer Sign Up**: Users can register on the Signup Screen (`/signup`).
-- **Automatic Profile Creation**: A database trigger (`on_auth_user_created` in `001_initial_schema.sql`) automatically creates a user profile in `public.profiles` with `role = 'customer'`.
-- **Email Confirmation Note**: If **"Confirm email"** is enabled in your Supabase Dashboard (`Authentication -> Providers -> Email`), Supabase sends a confirmation email before allowing login. To allow instant sign-in during local testing, toggle **"Confirm email" OFF** in the Supabase Dashboard.
+*A full-stack Flutter app with real-time order tracking, AI-powered menu assistance, and a complete admin dashboard — powered by Supabase and Groq.*
 
----
-
-### 2. Admin & Staff Credentials (How to Set Up Admin Login)
-
-Admin and Staff users sign in at the **Staff Portal** (`/admin/login`). Role permissions (`customer`, `staff`, `admin`) are controlled by the `public.profiles.role` column and guarded by Supabase Row Level Security (RLS).
-
-#### To Create Your First Admin Account:
-1. **Option A: Sign up in the App**
-   - Open the app and sign up at `/signup` with your desired admin email (e.g., `admin@bistrogo.com`).
-   
-2. **Elevate Role to Admin**:
-   - Open your **Supabase Dashboard** ➔ **SQL Editor** and run:
-   ```sql
-   UPDATE public.profiles
-   SET role = 'admin'
-   WHERE id = (
-     SELECT id FROM auth.users WHERE email = 'admin@bistrogo.com'
-   );
-   ```
-
-3. **Log in to Staff Portal**:
-   - Go to `/admin/login` in the app.
-   - Enter `admin@bistrogo.com` and your password.
-   - You now have full access to the **Admin Kitchen Dashboard**, **Realtime Order Management**, and **Menu CRUD**.
+</div>
 
 ---
 
-### 3. Google Sign-In Configuration
+## ✨ Features
 
-Google Sign-In uses **Supabase OAuth** with custom deep linking (`io.supabase.bistro-go://login-callback`).
+### 🛒 Customer App
+- **Onboarding & Auth** — Email/password sign up, login, forgot password, Google Sign-In (OAuth)
+- **Menu Browsing** — Category filters, search, item detail with add-ons
+- **Smart Cart** — Persistent per-user cart with quantity management and quick-add
+- **Checkout** — 3-way order type toggle: Delivery, Takeaway, Dine-In; delivery fee waived for non-delivery
+- **Order Tracking** — Real-time status stepper (Placed → Confirmed → Preparing → Ready → Completed)
+- **Order History** — Full history with per-order detail view
+- **AI Menu Assistant** — Conversational chat powered by Groq (Llama 3.3 70B); recommends real menu items as tappable product cards inline in chat
+- **Profile Management** — Edit name, phone; manage delivery addresses
 
-#### Setup Steps in Supabase & Google Cloud Console:
-1. **Google Cloud Console**:
-   - Create an **OAuth 2.0 Web Application Client ID** in Google Cloud Console.
-   - Add Authorized Redirect URI:
-     `https://tadfgzdhytlqmaqevswv.supabase.co/auth/v1/callback`
-
-2. **Supabase Dashboard**:
-   - Navigate to **Authentication ➔ Providers ➔ Google**.
-   - Enable Google Sign-In and paste your **Client ID** and **Client Secret**.
-
-3. **Android Deep Link Scheme**:
-   - The deep link filter is already added to `android/app/src/main/AndroidManifest.xml`:
-     ```xml
-     <intent-filter>
-         <action android:name="android.intent.action.VIEW" />
-         <category android:name="android.intent.category.DEFAULT" />
-         <category android:name="android.intent.category.BROWSABLE" />
-         <data android:scheme="io.supabase.bistro-go" android:host="login-callback" />
-     </intent-filter>
-     ```
+### 👨‍🍳 Admin / Staff App
+- **Kitchen Dashboard** — Live order feed with real-time updates via Supabase Realtime
+- **Status Management** — Advance orders through valid transitions only, enforced server-side
+- **Menu CRUD** — Add, edit, delete menu items; toggle availability; upload images to Supabase Storage
+- **Order Detail** — View full order breakdown, customer info, status history
 
 ---
 
-## 🗄️ Database & Backend Installation Steps
+## 🏗️ Tech Stack
 
-1. **Apply Schema**:
-   - Run [`supabase/migrations/001_initial_schema.sql`](file:///d:/Internship/Cibus%20Click/cibus/supabase/migrations/001_initial_schema.sql) in your Supabase SQL Editor.
-
-2. **Apply Seed Data**:
-   - Run [`supabase/seed.sql`](file:///d:/Internship/Cibus%20Click/cibus/supabase/seed.sql) to populate 6 categories, 14 menu items with images, and add-ons.
-
-3. **Create Storage Buckets**:
-   - Create public bucket `menu-images` for dish photos.
-   - Create bucket `avatars` for user profile photos.
-
-4. **Enable Realtime**:
-   - In Supabase Dashboard ➔ **Database ➔ Replication**, enable Realtime for the `orders` table.
+| Layer | Technology |
+|---|---|
+| **Mobile** | Flutter 3.x (Dart) |
+| **State Management** | Riverpod (providers + async state) |
+| **Navigation** | GoRouter |
+| **Backend / Database** | Supabase (PostgreSQL + RLS) |
+| **Auth** | Supabase Auth (Email + Google OAuth) |
+| **Realtime** | Supabase Realtime (order status updates) |
+| **Storage** | Supabase Storage (menu images, avatars) |
+| **Edge Functions** | Deno / TypeScript (order placement, status updates, AI assistant) |
+| **AI** | Groq API — Llama 3.3 70B Versatile |
+| **Image Caching** | `cached_network_image` |
 
 ---
 
-## 🚀 Building & Running the App
+## 📁 Project Structure
+
+```
+cibus/
+├── lib/
+│   ├── core/
+│   │   ├── constants/          # App colors, spacing, text styles, shadows
+│   │   ├── providers/          # Riverpod providers (auth, cart, menu, orders)
+│   │   ├── router/             # GoRouter configuration & route names
+│   │   └── utils/              # Currency formatter, helpers
+│   ├── features/
+│   │   ├── admin/              # Admin dashboard, order management, menu CRUD
+│   │   ├── ai_assistant/       # AI menu chat screen
+│   │   ├── auth/               # Login, signup, forgot password
+│   │   ├── cart/               # Cart screen
+│   │   ├── checkout/           # Checkout with order type selection
+│   │   ├── home/               # Home feed, menu grid, shell layout
+│   │   ├── item_detail/        # Item detail with add-ons
+│   │   ├── onboarding/         # Onboarding flow
+│   │   ├── order_history/      # My orders list & detail
+│   │   ├── order_tracking/     # Real-time status tracking
+│   │   ├── profile/            # User profile & address management
+│   │   └── splash/             # Splash screen
+│   ├── models/                 # Data models (Order, MenuItem, CartItem, etc.)
+│   ├── services/               # API service layer (auth, menu, order, FCM)
+│   └── shared_widgets/         # Reusable widgets (cards, skeletons, buttons)
+├── supabase/
+│   ├── functions/
+│   │   ├── place-order/        # Edge Function: validates, prices & places orders
+│   │   ├── update-order-status/ # Edge Function: role-gated status transitions
+│   │   └── menu-assistant/     # Edge Function: AI chat with live menu context
+│   └── migrations/             # SQL migration files (apply in order)
+└── assets/                     # Fonts (Sora, Inter), images
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Flutter SDK `>=3.0.0`
+- Dart SDK `>=3.0.0`
+- A [Supabase](https://supabase.com) project
+- A [Groq](https://console.groq.com) API key (for the AI assistant)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (for deploying Edge Functions)
+
+### 1. Clone the Repository
 
 ```bash
-# Run on connected device/emulator
-flutter run
-
-# Build Debug APK
-flutter build apk --debug
+git clone https://github.com/AbdullahNasrullah10937/Bistro-Go.git
+cd Bistro-Go
 ```
-*APK output path*: `build/app/outputs/flutter-apk/app-debug.apk`
+
+### 2. Install Flutter Dependencies
+
+```bash
+flutter pub get
+```
+
+### 3. Configure Supabase
+
+Create a `.env` file or set the following values in `lib/main.dart`:
+
+```dart
+// Replace with your own Supabase project credentials
+await Supabase.initialize(
+  url: 'YOUR_SUPABASE_PROJECT_URL',
+  anonKey: 'YOUR_SUPABASE_ANON_KEY',
+);
+```
+
+> ⚠️ **Never commit real credentials.** Add `.env` to `.gitignore`.
+
+### 4. Apply Database Migrations
+
+Run each file in your **Supabase SQL Editor** in order:
+
+```
+supabase/migrations/001_initial_schema.sql
+supabase/migrations/002_fix_rls_recursion.sql
+supabase/migrations/003_add_order_type.sql
+supabase/migrations/004_fix_order_items_rls.sql
+supabase/migrations/005_fix_order_status_history_rls.sql
+```
+
+### 5. Seed Menu Data
+
+Run `supabase/seed.sql` in the SQL Editor to populate categories, menu items, and add-ons.
+
+### 6. Set Up Storage Buckets
+
+In your Supabase Dashboard → Storage, create two **public** buckets:
+- `menu-images` — for dish photos
+- `avatars` — for user profile photos
+
+### 7. Enable Realtime
+
+Dashboard → Database → Replication → enable Realtime for the `orders` table.
+
+### 8. Deploy Edge Functions
+
+```bash
+supabase login
+supabase functions deploy place-order --project-ref YOUR_PROJECT_REF
+supabase functions deploy update-order-status --project-ref YOUR_PROJECT_REF
+supabase functions deploy menu-assistant --project-ref YOUR_PROJECT_REF
+
+# Set the Groq API key secret for the AI assistant
+supabase secrets set GROQ_API_KEY=your_groq_api_key --project-ref YOUR_PROJECT_REF
+```
+
+### 9. Configure Google Sign-In (Optional)
+
+1. Create an **OAuth 2.0 Web Client ID** in [Google Cloud Console](https://console.cloud.google.com).
+2. Add your Supabase callback URL as an Authorized Redirect URI.
+3. In Supabase Dashboard → Authentication → Providers → Google, enable it and add your Client ID & Secret.
+4. The Android deep link scheme `io.supabase.bistro-go://login-callback` is already configured in `AndroidManifest.xml`.
+
+### 10. Run the App
+
+```bash
+flutter run
+```
+
+---
+
+## 🗄️ Database Schema Overview
+
+| Table | Purpose |
+|---|---|
+| `profiles` | Extended user info (name, phone, role, avatar) |
+| `categories` | Menu item categories |
+| `menu_items` | Dishes with name, price, description, tags, add-ons |
+| `cart_items` | Per-user cart, isolated by RLS |
+| `orders` | Orders with type (delivery/takeaway/dine-in), status, totals |
+| `order_items` | Line items per order |
+| `order_status_history` | Audit log of every status change |
+| `addresses` | Saved delivery addresses per user |
+
+---
+
+## 🔐 Admin Access
+
+1. Sign up in the app with your desired admin email.
+2. In Supabase SQL Editor, promote the account:
+
+```sql
+UPDATE public.profiles
+SET role = 'admin'
+WHERE id = (
+  SELECT id FROM auth.users WHERE email = 'your-email@example.com'
+);
+```
+
+3. Log in at the **Staff Portal** (accessible from the app's admin login route).
+
+---
+
+## 🧱 Architecture Highlights
+
+- **Row Level Security (RLS)** — Every table is protected. Customers only see their own data. Admins use a `SECURITY DEFINER` function to avoid recursive policy checks.
+- **Edge Functions as API Layer** — Order placement, status updates, and AI chat happen server-side. The client never writes directly to sensitive tables.
+- **Riverpod State Management** — Auth state changes automatically invalidate user-scoped providers (cart, orders, profile), preventing data leaks between sessions.
+- **Two-Query Profile Pattern** — Customer names are fetched separately from orders to avoid PostgREST relationship errors (no direct FK between `orders` and `profiles`).
+
+---
+
+## 📸 Screenshots
+
+> *Coming soon — add screenshots of Home, AI Chat, Order Tracking, and Admin Dashboard here.*
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
