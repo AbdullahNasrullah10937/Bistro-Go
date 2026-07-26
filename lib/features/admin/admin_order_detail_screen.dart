@@ -37,13 +37,6 @@ class AdminOrderDetailScreen extends ConsumerWidget {
             color: Color(0xFFB83806),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF292524), size: 24),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: orderAsync.when(
         data: (order) => SingleChildScrollView(

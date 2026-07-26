@@ -55,13 +55,6 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
             color: Color(0xFFB83806),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF292524), size: 24),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,11 +340,7 @@ class _MenuManagementScreenState extends ConsumerState<MenuManagementScreen> {
 
               // Settings Tab
               InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Settings feature coming soon.')),
-                  );
-                },
+                onTap: () => context.push(AppRoutes.adminSettings),
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

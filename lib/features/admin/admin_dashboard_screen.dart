@@ -79,10 +79,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF292524), size: 24),
-            onPressed: () {},
-          ),
-          IconButton(
             icon: const Icon(Icons.logout_rounded, color: Color(0xFF78716C), size: 22),
             tooltip: 'Sign Out',
             onPressed: () async {
@@ -235,11 +231,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
               // Settings Tab
               InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Settings feature coming soon.')),
-                  );
-                },
+                onTap: () => context.push(AppRoutes.adminSettings),
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -543,7 +535,6 @@ class _AdminOrderTile extends ConsumerWidget {
         OrderStatus.ready => (const Color(0xFFDCFCE7), const Color(0xFF15803D)),
         OrderStatus.completed => (const Color(0xFFDCFCE7), const Color(0xFF15803D)),
         OrderStatus.cancelled => (const Color(0xFFFEE2E2), const Color(0xFFB91C1C)),
-        _ => (const Color(0xFFF3F4F6), const Color(0xFF4B5563)),
       };
 
   IconData _statusIcon(OrderStatus s) => switch (s) {
@@ -553,6 +544,5 @@ class _AdminOrderTile extends ConsumerWidget {
         OrderStatus.ready => Icons.done_all_rounded,
         OrderStatus.completed => Icons.check_circle_rounded,
         OrderStatus.cancelled => Icons.cancel_outlined,
-        _ => Icons.info_outline,
       };
 }

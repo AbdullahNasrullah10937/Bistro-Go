@@ -24,6 +24,7 @@ import '../../features/admin/admin_dashboard_screen.dart';
 import '../../features/admin/admin_order_detail_screen.dart';
 import '../../features/admin/menu_management_screen.dart';
 import '../../features/admin/add_edit_menu_item_screen.dart';
+import '../../features/admin/admin_settings_screen.dart';
 import '../../features/ai_assistant/ai_assistant_screen.dart';
 import '../../features/home/main_shell.dart';
 
@@ -50,6 +51,7 @@ abstract class AppRoutes {
   static const menuManagement = '/admin/menu';
   static const addMenuItem = '/admin/menu/add';
   static const editMenuItem = '/admin/menu/edit/:id';
+  static const adminSettings = '/admin/settings';
   static const aiAssistant = '/ai-assistant';
 }
 
@@ -172,6 +174,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/admin/menu/edit/:id',
         builder: (context, state) =>
             AddEditMenuItemScreen(itemId: state.pathParameters['id']),
+      ),
+      GoRoute(
+        path: AppRoutes.adminSettings,
+        builder: (context, state) => const AdminSettingsScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
