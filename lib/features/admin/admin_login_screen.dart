@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_spacing.dart';
 import '../../core/router/app_router.dart';
 import '../../services/auth_service.dart';
 
@@ -286,7 +285,37 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
+
+                      // Back to Customer App Navigation Link
+                      InkWell(
+                        onTap: () => context.go(AppRoutes.login),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(
+                                Icons.arrow_back_rounded,
+                                size: 16,
+                                color: Color(0xFFB83806),
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Back to Customer Login',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFB83806),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
 
                       // Footer text
                       RichText(
