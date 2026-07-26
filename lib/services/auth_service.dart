@@ -54,7 +54,6 @@ class AuthService {
     }
   }
 
-
   // ── Sign In ───────────────────────────────────────────────────────────────
   Future<Profile> signIn({required String email, required String password}) async {
     try {
@@ -90,7 +89,26 @@ class AuthService {
   // ── Forgot Password ───────────────────────────────────────────────────────
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.bistro-go://login-callback',
+      );
+    } on AuthException catch (e) {
+      throw AuthFailure(e.message);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  // ── Update Password (Completion of Reset Flow) ────────────────────────────
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      final response = await _client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      if (response.user == null) {
+        throw const AuthFailure('Failed to update password.');
+      }
     } on AuthException catch (e) {
       throw AuthFailure(e.message);
     } catch (e) {

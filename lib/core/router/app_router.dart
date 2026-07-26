@@ -9,6 +9,7 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/signup_screen.dart';
 import '../../features/auth/forgot_password_screen.dart';
+import '../../features/auth/update_password_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/item_detail/item_detail_screen.dart';
 import '../../features/cart/cart_screen.dart';
@@ -35,6 +36,7 @@ abstract class AppRoutes {
   static const login = '/login';
   static const signup = '/signup';
   static const forgotPassword = '/forgot-password';
+  static const updatePassword = '/update-password';
   static const home = '/home';
   static const itemDetail = '/item/:id';
   static const cart = '/cart';
@@ -90,6 +92,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.forgotPassword,
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.updatePassword,
+        builder: (context, state) => const UpdatePasswordScreen(),
       ),
 
       // Main shell with bottom nav

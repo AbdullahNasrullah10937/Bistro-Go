@@ -3,22 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/profile.dart';
 import '../../services/auth_service.dart';
+import '../router/app_router.dart';
 import 'address_provider.dart';
 import 'cart_provider.dart';
 import 'order_provider.dart';
-
-
 
 /// Stream of Supabase auth state changes
 final authStateProvider = StreamProvider<AuthState>((ref) {
   return Supabase.instance.client.auth.onAuthStateChange;
 });
 
-/// Centralized Auth State Listener — invalidates all user-scoped state on sign in / sign out
+/// Centralized Auth State Listener — invalidates user-scoped state and handles auth events
 final authStateListenerProvider = Provider<void>((ref) {
   ref.listen<AsyncValue<AuthState>>(authStateProvider, (previous, next) {
     next.whenData((authState) {
       final event = authState.event;
+
+      // Password recovery deep link event takes priority
+      if (event == AuthChangeEvent.passwordRecovery) {
+        ref.read(routerProvider).go(AppRoutes.updatePassword);
+        return;
+      }
+
       if (event == AuthChangeEvent.signedIn ||
           event == AuthChangeEvent.signedOut ||
           event == AuthChangeEvent.userUpdated ||
@@ -33,9 +39,7 @@ final authStateListenerProvider = Provider<void>((ref) {
   });
 });
 
-
 /// The currently signed-in user (nullable)
-
 final currentUserProvider = Provider<User?>((ref) {
   return Supabase.instance.client.auth.currentUser;
 });
