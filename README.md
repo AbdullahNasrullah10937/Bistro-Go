@@ -23,7 +23,7 @@
 - **Live Supabase Project Reference**: `wpxfvhqfvwjfgxkyqgze` (US East)
 - **Admin Portal Test Credentials**:
   - **URL Route**: Navigate to `/admin/login` from app login screen
-  - **Email**: `admin@bistrogo.com`
+  - **Email**: `admin@bistro.com`
   - **Password**: `Admin123`
 
 ---
