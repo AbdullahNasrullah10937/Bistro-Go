@@ -24,7 +24,7 @@
 - **Admin Portal Test Credentials**:
   - **URL Route**: Navigate to `/admin/login` from app login screen
   - **Email**: `admin@bistrogo.com`
-  - **Password**: `Admin@123456`
+  - **Password**: `Admin123`
 
 ---
 
