@@ -2,16 +2,51 @@
 
 **Developer**: Abdullah Nasrullah  
 **Project**: Bistro Go — Café & Restaurant Mobile Ordering App  
-**Core Stack**: Flutter, Supabase (PostgreSQL, Auth, RLS, Storage, Realtime, Edge Functions), Stripe (Test Mode), Groq API (Llama 3.3 70B)
+**Core Stack**: Flutter, Supabase (PostgreSQL, Auth, RLS, Storage, Realtime, Edge Functions), Stripe (Test Mode), Groq API (Llama 3.3 70B)  
+**Development Timeline**: Built & Completed end-to-end in **2 Days**
 
 ---
 
-## 1. What Was Built
+## 1. Executive Summary & Deliverables
+
+- **GitHub Repository**: [https://github.com/AbdullahNasrullah10937/Bistro-Go](https://github.com/AbdullahNasrullah10937/Bistro-Go)
+- **Live Supabase Project Ref**: `wpxfvhqfvwjfgxkyqgze` (US East)
+- **Automated Test Suite**: 18 tests passing (`flutter test`)
+- **Release APK**: Included in [GitHub Releases](https://github.com/AbdullahNasrullah10937/Bistro-Go/releases) (`app-release.apk`)
+
+---
+
+## 2. AI Tools Usage & Engineering Reflection
+
+> *"We grade learning, not just output."*
+
+### AI Tools Utilized
+1. **Antigravity AI Coding Assistant by Google DeepMind**: Used as the primary agentic pair programmer for iterative code generation, refactoring, and debugging across Dart/Flutter, TypeScript/Deno, and SQL migrations.
+2. **Claude 3.5 Sonnet**: Utilized for architecture design, Riverpod 2.0 state provider structuring, and Deno Edge Function API contract definitions.
+3. **Groq API (Llama 3.3 70B Versatile)**: Embedded into the live mobile application as the backend LLM powering the interactive conversational AI Menu Assistant.
+
+### How AI Tools Were Leveraged
+- **Rapid Scaffolding**: Generated strongly-typed Dart models (`Order`, `MenuItem`, `Profile`, `CartItem`) and Riverpod `AsyncNotifier` providers.
+- **Edge Function Boilerplate**: Drafted TypeScript handlers for serverless payment intent creation, order verification, and Groq LLM prompt formatting.
+- **SQL Migration Generation**: Drafted database schemas, foreign key constraints, triggers (`handle_new_user`), and initial Row Level Security (RLS) policies.
+
+### Key Learnings & Architectural Overrides (Human Engineering)
+
+| Challenge / Discovery | Root Cause | AI Guidance vs Human Decision / Resolution |
+|---|---|---|
+| **Windows Kotlin Cross-Drive Bug** | Gradle failed during Android compilation with `this and base files have different roots` because the project was on `D:` drive while pub cache was on `C:`. | AI initially suggested updating Kotlin versions. Human developer diagnosed the cross-drive path calculation limit on Windows and fixed it by adding `kotlin.incremental=false` to `android/gradle.properties`. |
+| **Stripe Orphan Payments Risk** | Initial naive flow created orders before payment confirmation, risking abandoned database rows if card payment failed. | Designed a robust 2-phase architecture: Orders are created in `pending_payment` state via serverless Edge Function, verified with Stripe API, and cart is cleared only upon verified payment success. |
+| **PostgREST RLS Recursion (`PGRST200`)** | Policies querying `public.profiles` while checking roles triggered infinite policy loops. | Replaced naive RLS checks with a `SECURITY DEFINER` Postgres function (`public.current_user_role()`) that bypasses RLS during role evaluation. |
+| **Decoupled Relational Joins** | Direct PostgREST table joins threw errors due to lack of direct foreign key links between `orders` and `profiles`. | Implemented an application-level two-query join inside `OrderService` to securely stitch customer profiles without modifying database normalization. |
+
+---
+
+## 3. What Was Built
 
 ### Customer Mobile Experience
-- **Authentication & Security**: Email/Password login + signup, Google OAuth with custom deep linking scheme (`io.supabase.bistro-go://login-callback`), forgot password flow, and automatic JWT session restoration on app relaunch.
+- **Authentication & Security**: Email/Password login + signup, Google OAuth with custom deep linking scheme (`io.supabase.bistro-go://login-callback`), forgot password flow with deep link recovery screen (`/update-password`), and automatic JWT session restoration on app relaunch.
 - **Interactive Menu**: Category tabs, live keyword search, price & dietary tag filtering, high-resolution product photography, item detail view with custom add-ons and quantity steppers.
-- **Cart Management**: Per-user isolated cart with real-time subtotal, tax, delivery fee calculation, and empty state illustrations.
+- **Smart Cart**: Per-user isolated cart with real-time subtotal, tax (8.5%), delivery fee calculation ($4.99 standard, free over $30), and empty state illustrations.
 - **Saved Address Selector**: Full address management allowing users to save, edit, set defaults, and select delivery addresses during checkout via bottom-sheet modal or add new addresses on the fly.
 - **Flexible Order Modes**: 3-way toggle (**Delivery**, **Takeaway**, **Dine-In**), dynamically adjusting UI inputs (address selector vs. table number) and automatically waiving delivery fees for non-delivery orders.
 - **Production-Grade Payment Integration**:
@@ -25,40 +60,45 @@
 - **Live Orders Kitchen Dashboard**: Realtime WebSocket feed of active orders with new-order alert toasts, status filters, and detail modals.
 - **Enforced State Machine**: Order status transitions validated server-side via `update-order-status` Edge Function to block illegal status changes (e.g. `placed` → `completed`).
 - **Menu Management CRUD**: Complete control over menu items and categories (Add, Edit, Delete, Toggle Availability, Price adjustment, Image Upload to Supabase Storage).
+- **Admin Settings**: Store opening status toggle, auto-accept switch, kitchen alert toggles, and store preferences.
 
 ---
 
-## 2. Architecture & Database Design
+## 4. Automated Testing Suite
 
-### Database Schema & Migrations (`supabase/migrations/`)
-- `001_initial_schema.sql`: Initial 8 tables (`profiles`, `categories`, `menu_items`, `item_addons`, `cart_items`, `orders`, `order_items`, `order_status_history`, `addresses`, `payments`).
-- `002_fix_rls_recursion.sql`: Created `SECURITY DEFINER` function `public.current_user_role()` to resolve recursive RLS policy evaluation loops on `public.profiles`.
-- `003_add_order_type.sql`: Added `order_type` enum (`delivery`, `dine_in`, `takeaway`).
-- `005_fix_order_status_history_rls.sql`: Granted RLS permissions for staff/admin to log audit history entries.
-- `006_add_storage_policies.sql`: Configured RLS policies for `storage.objects` on `menu-images` (public read, admin write) and `avatars` (owner write).
-- `007_add_delivery_address_to_orders.sql`: Added `delivery_address text` snapshot column to `public.orders`.
-- `008_add_stripe_fields_to_orders.sql`: Added `pending_payment` & `payment_failed` enum values + `payment_intent_id` & `payment_status` columns.
+The repository contains an automated test suite under `test/` covering unit logic, serialization, currency formatting, and UI widgets:
 
-### Solved Technical Challenges
-1. **Windows Kotlin Incremental Compiler Drive Limits**: Resolved cross-drive compilation crash (`this and base files have different roots`) when building Flutter plugins on Windows by adding `kotlin.incremental=false` and setting Java 21 JDK in `android/gradle.properties`.
-2. **PostgREST Unlinked FK Relational Joins**: Bypassed `PGRST200` schema relationship limits by adopting a clean, decoupled two-query application-level join in `OrderService`.
-3. **Stripe Payment Consistency**: Guaranteed that zero orphan payments exist without orders by initializing orders as `pending_payment` and verifying Stripe `PaymentIntent` server-side before marking orders as `placed` and clearing user carts.
+```bash
+flutter test
+```
+
+### Test Coverage Summary (18 Tests):
+1. **`test/unit/cart_calculator_test.dart`**:
+   - Accurately computes 8.5% sales tax.
+   - Calculates $4.99 standard delivery fee for delivery under $30.
+   - Waives delivery fee for orders over $30.
+   - Waives delivery fee for Dine-In and Takeaway orders regardless of subtotal.
+   - Verifies subtotal + tax + delivery fee grand totals.
+2. **`test/unit/order_model_test.dart`**:
+   - Tests `OrderStatus` human-readable display names and string parsing fallbacks.
+   - Validates server state machine transition rules (`canTransitionTo`).
+   - Asserts terminal states (`isTerminal` for `completed` and `cancelled`).
+   - Verifies `Order.fromJson` parsing with nested `order_items` and joined customer profile data.
+3. **`test/unit/currency_formatter_test.dart`**:
+   - Tests compact USD string formatting (`$12.50`, `$0.00`).
+4. **`test/widget/primary_button_test.dart`**:
+   - Verifies button label rendering and tap callback triggers.
+   - Verifies `CircularProgressIndicator` display and tap prevention during loading states.
+   - Verifies icon rendering when provided.
+5. **`test/widget/empty_state_test.dart`**:
+   - Tests `EmptyState` title, subtitle, icon, and action button callbacks.
+   - Tests `ErrorState` message rendering and retry callback triggers.
 
 ---
 
-## 3. AI Tooling Usage Log
-
-- **Claude / Cursor / Gemini**: Used for initial scaffolding of Riverpod providers, Deno Edge Function boilerplate, and SQL migration drafts.
-- **Key Overrides & Human Debugging**:
-  - Rewrote PostgREST query logic in `OrderService` to prevent runtime `PGRST200` exceptions when fetching customer profile data alongside order objects.
-  - Configured custom RLS policies for Supabase Storage buckets to resolve `403 StorageException` errors on menu image uploads.
-  - Implemented client-side fallback and error bounds for Stripe PaymentSheet cancel events.
-
----
-
-## 4. Production Readiness Verification
+## 5. Production Readiness & Security Verification
 
 - [x] **Row Level Security (RLS)**: Enabled with default-deny on all 8 tables + `storage.objects`.
 - [x] **Server-Side API Layer**: 5 Edge Functions deployed (`place-order`, `update-order-status`, `menu-assistant`, `create-payment-intent`, `confirm-order-payment`).
 - [x] **Credential Hygiene**: `STRIPE_SECRET_KEY` and `GROQ_API_KEY` stored exclusively as Edge Function secrets. No sensitive keys embedded in Flutter code.
-- [x] **Git Cleanliness**: `git status` verified (`working tree clean`). All 7 migration files and 5 Edge Functions committed to repository `main`.
+- [x] **Git Cleanliness**: `git status` verified (`working tree clean`). All migration files, Edge Functions, and tests committed to repository `main`.
